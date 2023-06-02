@@ -2,6 +2,7 @@ from nltk.corpus import stopwords
 from transformers import BertModel, BertTokenizer
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
+import random
 
 
 # Preprocess text data
@@ -30,8 +31,12 @@ def read_text_file(filename):
 
     return questions, answers
 
+
+
 # User input
 def process_user_input(questions, answers, model, tokenizer):
+    match_percentages = []
+
     for i, question in enumerate(questions):
         user_input = input(f"Enter your answer for question '{question}': ")
         # Preprocess user input
@@ -60,9 +65,16 @@ def process_user_input(questions, answers, model, tokenizer):
         highest_similarity = max(similarities[0])
         match_percentage = highest_similarity * 100
 
-        # Print the match percentage
-        print(f"Match percentage for question '{question}': {match_percentage:.2f}%")
-        print()
+        match_percentages.append(match_percentage)
+        
+
+    #     # Print the match percentage
+    # for i,question in enumerate(questions):
+    #     print(f"Match percentage for question '{question}': {match_percentage:.2f}%")
+    #     print()
+
+    overall_match_percentage = sum(match_percentages) / len(questions)
+    print(f"Overall Match percentage: {overall_match_percentage:.2f}%")
 
 # Main code
 if __name__ == '__main__':
@@ -95,6 +107,8 @@ if __name__ == '__main__':
     with torch.no_grad():
         answer_outputs = model(answer_input_ids)
         answer_embeddings = answer_outputs.last_hidden_state.mean(dim=1)
+
+    random.shuffle(questions)
 
     # Process user input
     process_user_input(questions, answers, model, tokenizer)
